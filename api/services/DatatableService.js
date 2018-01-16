@@ -105,12 +105,17 @@ module.exports.getData = function (model, options) {
         sort: _options.columns[+_options.order[0].column].data + ' ' + _options.order[0].dir.toUpperCase()
     }), populate);
 
+    var queryCount = populateModelAssociations(MODEL.count({
+        where: whereQuery,
+        select: select
+    }), populate);
+
     //find the databased on the query and total items in the database data[0] and data[1] repectively
-    return Promise.all([query, MODEL.count()]).then(data => {
+    return Promise.all([query, MODEL.count(), queryCount]).then(data => {
         _response.recordsTotal = data[1]//no of data stored
-        _response.recordsFiltered = data[0].length//no of data after applying filter
+        _response.recordsFiltered = data[2]//no of data after applying filter
         _response.iTotalRecords = data[1]//no of data stored (legacy)
-        _response.iTotalDisplayRecords = data[0].length//no of data after applying filter (legacy)
+        _response.iTotalDisplayRecords = data[2]//no of data after applying filter (legacy)
         _response.data = data[0]//data
         return _response
     }).catch(error => {
